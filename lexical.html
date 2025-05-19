@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Lexical Analysis</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fff0f0;
+            margin: 0;
+            padding: 0;
+            color: #900000;
+        }
+        header {
+            background: linear-gradient(to right, #cc0000, #990000);
+            
+            padding: 20px 40px;
+            text-align: center;
+        }
+        header h1 {
+            color: white;
+            font-weight: 800;
+            margin: 0;
+            font-size: 38px;
+        }
+        header p {
+            color: black;
+            font-weight: 900;
+            font-size: 18px;
+            margin-top: 5px;
+        }
+        main {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(153, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+        h2 {
+            color: #b30000;
+            margin-top: 40px;
+        }
+        p, ul {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #660000;
+        }
+        ul {
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+        code {
+            background: #ffe6e6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #b30000;
+        }
+        pre {
+            background: #fff0f0;
+            padding: 15px;
+            border-left: 6px solid #b30000;
+            font-size: 16px;
+            overflow-x: auto;
+            border-radius: 6px;
+            color: #660000;
+        }
+        footer {
+            background: #990000;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 50px;
+        }
+
+        /* Interactive Lexical Analysis Section */
+        #lexdiv {
+            margin-top: 50px;
+            padding: 20px;
+            border: 2px solid #cc0000;
+            border-radius: 12px;
+            background: #fff5f5;
+            color: #660000;
+            text-align: center;
+        }
+        #lexdiv h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #b30000;
+        }
+        #code {
+            width: 80%;
+            font-family: monospace;
+            font-size: 16px;
+            padding: 10px;
+            border: 1.5px solid #b30000;
+            border-radius: 6px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #cc0000;
+            border: none;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #990000;
+        }
+        #result {
+            margin-top: 20px;
+            color: #900000;
+            font-weight: bold;
+            min-height: 40px;
+        }
+    </style>
+    <script>
+        function sendCode() {
+            const codeInput = document.getElementById('code').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            if (!codeInput) {
+                resultDiv.textContent = "Please enter some code to analyze!";
+                return;
+            }
+
+            
+            const tokens = codeInput.match(/\w+|[=;()+\-*/]/g);
+            if (!tokens) {
+                resultDiv.textContent = "No tokens found.";
+                return;
+            }
+
+            let output = "Tokens found:\n";
+            tokens.forEach((token, idx) => {
+                let type = "Identifier";
+                if (/^\d+$/.test(token)) {
+                    type = "Constant";
+                } else if (["int", "while", "if", "for", "return"].includes(token)) {
+                    type = "Keyword";
+                } else if (["=", "+", "-", "*", "/", ";", "(", ")"].includes(token)) {
+                    type = "Operator/Delimiter";
+                }
+                output += ` "${token}" → ${type}\n`;
+            });
+
+            resultDiv.textContent = output;
+        }
+
+        function resetFields() {
+            document.getElementById('code').value = '';
+            document.getElementById('result').textContent = '';
+        }
+    </script>
+</head>
+<body>
+
+    <header>
+        <h1>Lexical Analysis</h1>
+        <p>Understanding the first phase of the Compiler</p>
+    </header>
+
+    <main>
+
+        <section>
+            <h2>📌 What is Lexical Analysis?</h2>
+            <p>
+                Lexical Analysis is the first phase of the compiler. It involves reading the source code character by character to produce meaningful tokens.
+                The component that performs this phase is called the <strong>Lexical Analyzer</strong> or <strong>Scanner</strong>.
+            </p>
+        </section>
+
+        <section>
+            <h2>🔍 Purpose of Lexical Analysis</h2>
+            <ul>
+                <li>Convert the sequence of characters in source code into a sequence of tokens.</li>
+                <li>Remove unnecessary white spaces, tabs, comments, and newline characters.</li>
+                <li>Detect lexical errors like invalid characters or malformed tokens.</li>
+                <li>Help the parser understand the structure of code by organizing the stream of tokens.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🧩 What is a Token?</h2>
+            <p>
+                A token is a categorized block of text, usually representing something like a keyword, identifier, operator, literal, or punctuation.
+            </p>
+            <p><strong>Examples:</strong></p>
+            <ul>
+                <li><code>int</code> → keyword</li>
+                <li><code>x</code> → identifier</li>
+                <li><code>=</code> → assignment operator</li>
+                <li><code>10</code> → constant</li>
+                <li><code>;</code> → delimiter</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>⚙️ Lexical Analyzer (Scanner)</h2>
+            <p>
+                The Lexical Analyzer scans the source code and groups characters into tokens. It interacts with the symbol table and reports errors.
+            </p>
+            <p><strong>Main responsibilities:</strong></p>
+            <ul>
+                <li>Reading input characters from the source program.</li>
+                <li>Grouping characters into lexemes.</li>
+                <li>Producing a token for each lexeme.</li>
+                <li>Sending tokens to the syntax analyzer.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🔄 Lexeme vs Token</h2>
+            <ul>
+                <li><strong>Lexeme:</strong> A sequence of characters in the source code that matches a pattern for a token. (e.g., <code>while</code>, <code>sum</code>, <code>3.14</code>)</li>
+                <li><strong>Token:</strong> A pair consisting of a token name and the optional attribute value (e.g., <code>(IDENTIFIER, 'sum')</code>)</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>📐 Example</h2>
+            <p>Consider the following line of code:</p>
+            <pre>int x = 10;</pre>
+            <p>The lexical analyzer will generate these tokens:</p>
+            <ul>
+                <li><code>int</code> → keyword</li>
+                <li><code>x</code> → identifier</li>
+                <li><code>=</code> → operator</li>
+                <li><code>10</code> → constant</li>
+                <li><code>;</code> → delimiter</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🚫 Lexical Errors</h2>
+            <p>
+                Lexical errors occur when the analyzer encounters an invalid token such as:
+            </p>
+            <ul>
+                <li>Unknown symbols (e.g., <code>@</code>, <code>#</code> not part of language)</li>
+                <li>Improperly formed numbers or identifiers</li>
+            </ul>
+        </section>
+
+        <!-- New Sections -->
+        <section>
+            <h2>📈 Importance of Lexical Analysis</h2>
+            <p>
+                Lexical analysis simplifies the syntax analysis phase by breaking down the source code into manageable tokens, improving the efficiency and accuracy of the compiler. It also filters out irrelevant information like comments and whitespaces.
+            </p>
+        </section>
+
+        <section>
+            <h2>🛠️ Common Tools for Lexical Analysis</h2>
+            <ul>
+                <li><strong>Lex / Flex:</strong> Popular lexical analyzer generators.</li>
+                <li><strong>ANTLR:</strong> Tool for generating lexers and parsers.</li>
+                <li><strong>JFlex:</strong> A lexical analyzer generator for Java.</li>
+                <li><strong>Python PLY:</strong> Lex/Yacc implementation in Python.</li>
+            </ul>
+        </section>
+
+        <!-- Interactive Lexical Analysis -->
+        <section id="lexdiv">
+            <h1>Try me to understand Lexical Analysis more!</h1>
+            <textarea id="code" rows="7" placeholder="Enter code here..."></textarea><br />
+            <button onclick="sendCode()">Analyze</button>
+            <button onclick="resetFields()">RESET</button>
+            <pre id="result"></pre>
+        </section>
+
+    </main>
+
+    <footer>
+        Made by FOUR LOOPS &copy; 2025
+    </footer>
+
+</body>
+</html>

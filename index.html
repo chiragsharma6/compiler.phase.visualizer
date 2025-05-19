@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Compiler Visualizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+ 
+<body>
+
+<!-- /////home section starts here///// -->
+<div id="home">
+
+    <nav>
+        <h2>Compiler Phase Visualizer</h2>
+        <ul>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#about">About</a></li>
+        </ul>
+    </nav>
+
+    <div id="testdiv">
+        <div>
+            <button class="accordion">What Is A Compiler?<span class="icon">▼</span></button>
+            <div class="panel">
+                <p>
+                    <strong>A compiler is a software program that converts high-level source code into low-level machine code or an intermediate representation.</strong> 
+                    <br>
+                    <ul><br>
+                        <li>It enables computers to understand and execute instructions written in programming languages like C, C++, and Java.</li><br><br>
+                        <li>The compilation process involves multiple steps, collectively known as the phases of a compiler.</li><br><br>
+                        <li>Unlike an interpreter, which executes code line by line, a compiler processes the entire program in one go.</li><br><br>
+                        <li>It performs error checking, optimizations, and translation before generating an executable file.</li><br><br>
+                        <li>This approach generally results in faster execution times compared to interpreted languages.</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="accordion-section">
+            <button class="accordion">What Are The Phases Of A Compiler?<span class="icon">▼</span></button>
+            <div class="panel">
+                <p>A compiler works in multiple stages, each performing a specific task to transform source code into machine code. Here are the six main phases of a compiler:
+                    <ol>
+                        <li><strong>Lexical Analysis–</strong> Breaks the source code into meaningful tokens.</li><br>
+                        <li><strong>Syntax Analysis (Parsing)–</strong> Checks the structure of the code according to grammar rules.</li><br>
+                        <li><strong>Semantic Analysis–</strong> Ensures logical correctness and detects type errors.</li><br>
+                        <li><strong>Intermediate Code Generation–</strong> Converts code into an intermediate representation (IR).</li><br>
+                        <li><strong>Code Optimization–</strong> Improves efficiency by refining the IR.</li><br>
+                        <li><strong>Code Generation–</strong> Translates the optimized IR into final machine code.</li><br>
+                    </ol>
+                </p>
+            </div>
+
+            <br><br>
+
+            <!-- Image Section -->
+            <div id="imageofphases">
+                <img src="{{ url_for('static', filename='asset/phasesofcompiler.jpg') }}" alt="Compiler Phases">
+            </div>
+
+            <h4 id="buttonsknowmore">( Click these buttons to know more ! )</h4>
+
+            <div id="button">
+   
+
+<a href="{{ url_for('lexical') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Lexical Analysis</div>
+</a>
+
+<a href="{{ url_for('syntax') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Syntax Analysis</div>
+</a>
+
+<a href="{{ url_for('semantic') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Semantic Analysis</div>
+</a>
+
+<a href="{{ url_for('intermediate') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Intermediate Code Generation</div>
+</a>
+
+<a href="{{ url_for('optimization') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Code Optimization</div>
+</a>
+
+<a href="{{ url_for('generation') }}" target="_blank" rel="noopener noreferrer">
+    <div class="butt">Code Generation</div>
+</a>
+
+
+</div>
+
+        </div>
+    </div>
+</div>
+<!-- /////home section ends here///// -->
+
+<!-- /////about starts here///// -->
+<div id="about">
+    
+    <div id="anotherdiv"></div>
+</div>
+<!-- /////About ends here//// -->
+
+<footer>Made by FOUR LOOPS</footer>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

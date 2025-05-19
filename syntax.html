@@ -1,0 +1,544 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Syntax Analysis - Detailed Explanation</title>
+<style>
+    /* Reset & base */
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: #fff0f0;
+        color: #660000;
+        line-height: 1.6;
+        padding: 0 15px 50px;
+    }
+    header {
+        background: linear-gradient(90deg, #cc0000, #990000);
+        color: #fff;
+        text-align: center;
+        
+        box-shadow: 0 4px 8px rgba(153,0,0,0.4);
+        border-bottom: 4px solid #b30000;
+    }
+    header h1 {
+        margin: 0;
+        font-size: 2.8rem;
+        letter-spacing: 1px;
+    }
+    header p {
+        margin-top: 0.3rem;
+        font-size: 1.2rem;
+        font-weight: 500;
+        
+        color:black;
+    }
+    main {
+        max-width: 900px;
+        margin: 2rem auto;
+        background: white;
+        padding: 2rem 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 0 25px rgba(153,0,0,0.15);
+    }
+    h2 {
+        color: #b30000;
+        border-left: 6px solid #b30000;
+        padding-left: 12px;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+    }
+    p {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    ul {
+        margin-left: 1.5rem;
+        margin-bottom: 1.3rem;
+        color: #660000;
+    }
+    ul li {
+        margin-bottom: 0.6rem;
+        font-size: 1rem;
+    }
+    pre {
+        background: #fff0f0;
+        border-left: 6px solid #b30000;
+        color: #660000;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin-bottom: 1.5rem;
+        white-space: pre-wrap;
+    }
+    code {
+        background: #ffdddd;
+        color: #990000;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-weight: 600;
+    }
+    footer {
+        background: #990000;
+        color: white;
+        text-align: center;
+        padding: 1rem 0;
+        font-size: 0.9rem;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        box-shadow: 0 -3px 6px rgba(153,0,0,0.6);
+    }
+
+
+
+
+
+    #container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      font-size: 16px;
+      background-color: #b30000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #800000;
+    }
+
+    #svgWrapper {
+      margin-top: 30px;
+      overflow-x: auto;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fdfdfd;
+      max-height: 600px;
+    }
+
+    svg {
+      display: block;
+      margin: auto;
+    }
+
+
+
+    /* Responsive */
+    @media (max-width: 600px) {
+        main {
+            padding: 1.5rem 1.5rem;
+        }
+        header h1 {
+            font-size: 2rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Syntax Analysis</h1>
+    <p>Understanding the Second Phase of the Compiler</p>
+</header>
+
+<main>
+    <section>
+        <h2>What is Syntax Analysis?</h2>
+        <p>
+            Syntax Analysis, or <strong>Parsing</strong>, is the compiler phase that takes tokens from the lexical analyzer and arranges them into a tree structure called a <em>parse tree</em> or <em>syntax tree</em>.
+            It verifies that the tokens follow the language’s grammar rules and detects syntax errors.
+        </p>
+    </section>
+
+    <section>
+        <h2>Purpose of Syntax Analysis</h2>
+        <ul>
+            <li>Verify source code’s syntactic structure against formal grammar.</li>
+            <li>Construct parse trees or abstract syntax trees (ASTs) to represent hierarchical code structure.</li>
+            <li>Identify syntax errors and report them meaningfully.</li>
+            <li>Provide structured input for semantic analysis and further compilation stages.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Grammar and Syntax Rules</h2>
+        <p>
+            Syntax rules are defined by a <strong>Context-Free Grammar (CFG)</strong> that consists of:
+        </p>
+        <ul>
+            <li><strong>Terminals:</strong> Basic symbols (tokens) like keywords, operators, and identifiers.</li>
+            <li><strong>Non-terminals:</strong> Abstract syntactic categories such as Expression or Statement.</li>
+            <li><strong>Production Rules:</strong> Rules describing how non-terminals expand into terminals and/or other non-terminals.</li>
+            <li><strong>Start Symbol:</strong> The root non-terminal from which parsing begins.</li>
+        </ul>
+        <p>Example grammar for arithmetic expressions:</p>
+        <pre>
+Expression → Expression + Term | Expression - Term | Term
+Term       → Term * Factor    | Term / Factor    | Factor
+Factor     → ( Expression )   | number           | identifier
+        </pre>
+    </section>
+
+    <section>
+        <h2>Parse Tree vs Abstract Syntax Tree (AST)</h2>
+        <p>
+            <strong>Parse Tree:</strong> Detailed tree showing complete syntactic structure, including all grammar rules and tokens.<br/>
+            <strong>AST:</strong> Simplified tree focusing on essential constructs, removing unnecessary punctuation and intermediate nodes.
+        </p>
+        <p>For the expression <code>3 + 5 * 2</code>,</p>
+        <p><strong>Parse Tree (simplified):</strong></p>
+        <pre>
+Expression
+├── Expression
+│   └── Factor (3)
+├── +
+└── Term
+    ├── Term
+    │   └── Factor (5)
+    ├── *
+    └── Factor (2)
+        </pre>
+        <p><strong>Abstract Syntax Tree (AST):</strong></p>
+        <pre>
+      +
+     / \
+    3   *
+       / \
+      5   2
+        </pre>
+    </section>
+
+    <section>
+        <h2>Types of Parsers</h2>
+        <p>
+            Parsers are categorized by their approach to analyzing tokens:
+        </p>
+        <ul>
+            <li><strong>Top-Down Parsers:</strong> Start from the start symbol and attempt to rewrite it to the token stream. Examples: Recursive Descent, LL parsers.</li>
+            <li><strong>Bottom-Up Parsers:</strong> Start from tokens and build up towards the start symbol. Examples: LR, SLR, LALR parsers.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Recursive Descent Parser Example</h2>
+        <p>A simple top-down parser for arithmetic expressions:</p>
+        <pre>
+function parseExpression() {
+    parseTerm();
+    while (currentToken == '+' || currentToken == '-') {
+        consume(currentToken);
+        parseTerm();
+    }
+}
+
+function parseTerm() {
+    parseFactor();
+    while (currentToken == '*' || currentToken == '/') {
+        consume(currentToken);
+        parseFactor();
+    }
+}
+
+function parseFactor() {
+    if (currentToken == '(') {
+        consume('(');
+        parseExpression();
+        consume(')');
+    } else if (isNumber(currentToken)) {
+        consume(currentToken);
+    } else if (isIdentifier(currentToken)) {
+        consume(currentToken);
+    } else {
+        error("Unexpected token");
+    }
+}
+        </pre>
+    </section>
+
+    <section>
+        <h2>Syntax Errors</h2>
+        <p>Common syntax errors detected during parsing include:</p>
+        <ul>
+            <li>Missing or mismatched parentheses, braces, or semicolons.</li>
+            <li>Incorrect statement or expression structure.</li>
+            <li>Unexpected or invalid tokens.</li>
+        </ul>
+        <p>Good parsers provide clear error messages and may attempt recovery to continue parsing.</p>
+    </section>
+
+    <section>
+        <h2>Example Syntax Analysis</h2>
+        <p>Consider this snippet:</p>
+        <pre>
+if (x > 0) {
+    y = x * 2;
+} else {
+    y = 0;
+}
+        </pre>
+        <p>The syntax analyzer:</p>
+        <ul>
+            <li>Checks proper use of keywords (<code>if</code>, <code>else</code>), parentheses, and braces.</li>
+            <li>Builds a parse tree for the conditional statement.</li>
+            <li>Reports errors if syntax rules are violated.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Importance in Compiler Design</h2>
+        <p>
+            Syntax analysis is crucial because:
+        </p>
+        <ul>
+            <li>It defines the program structure that all later compiler phases rely on.</li>
+            <li>Errors detected here prevent meaningless further processing.</li>
+            <li>It creates the basis for semantic analysis and code generation.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Summary</h2>
+        <ul>
+            <li>Syntax Analysis validates the token sequence against language grammar.</li>
+            <li>It generates parse trees or ASTs representing code structure.</li>
+            <li>Detects syntax errors early, improving compiler robustness.</li>
+            <li>Supports semantic analysis and subsequent compilation phases.</li>
+        </ul>
+    </section>
+
+
+
+
+
+    
+
+
+
+
+<section style="margin-top: 50px;">
+  <h2 style="color: #b30000;">🧠 Graphical Syntax Tree Visualizer</h2>
+  <input type="text" id="expr" placeholder="Enter arithmetic expression (e.g., (2 + 3) * 4 - 1)" 
+         style="width: 100%; padding: 10px; font-size: 16px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ccc;" />
+  <button onclick="generateTree()" 
+          style="padding: 10px 20px; background-color: #b30000; color: white; border: none; border-radius: 6px; cursor: pointer;">
+    Generate Tree
+  </button>
+  <svg id="treeCanvas" width="100%" height="500" style="margin-top: 20px; border: 1px solid #ddd; background: #fff;"></svg>
+</section>
+
+ 
+
+
+
+
+
+
+  <script>
+    function tokenize(expr) {
+      return expr.match(/\d+|\+|\-|\*|\/|\(|\)/g) || [];
+    }
+
+    function parseExpression(tokens) {
+      let index = 0;
+
+      function peek() {
+        return tokens[index];
+      }
+
+      function consume() {
+        return tokens[index++];
+      }
+
+      function parsePrimary() {
+        const token = peek();
+        if (token === '(') {
+          consume();
+          const node = parseAddSub();
+          if (peek() !== ')') throw new Error("Expected ')'");
+          consume();
+          return { type: "Group", children: [node] };
+        } else if (/^\d+$/.test(token)) {
+          consume();
+          return { type: "Number", value: token };
+        } else {
+          throw new Error("Unexpected token: " + token);
+        }
+      }
+
+      function parseMulDiv() {
+        let node = parsePrimary();
+        while (peek() === '*' || peek() === '/') {
+          const op = consume();
+          const right = parsePrimary();
+          node = { type: "BinaryExpr", operator: op, left: node, right: right };
+        }
+        return node;
+      }
+
+      function parseAddSub() {
+        let node = parseMulDiv();
+        while (peek() === '+' || peek() === '-') {
+          const op = consume();
+          const right = parseMulDiv();
+          node = { type: "BinaryExpr", operator: op, left: node, right: right };
+        }
+        return node;
+      }
+
+      const result = parseAddSub();
+      if (index < tokens.length) throw new Error("Unexpected token: " + peek());
+      return result;
+    }
+
+    function computePositions(node, depth = 0) {
+  const spacing = 100;
+  const verticalOffset = 80; // Add extra vertical padding at top
+  let currX = 0;
+
+  function setPos(n, depth) {
+    if (!n) return;
+    n.y = depth * spacing + verticalOffset;  // <--- FIXED LINE
+
+    if (n.type === "BinaryExpr") {
+      setPos(n.left, depth + 1);
+      setPos(n.right, depth + 1);
+      n.x = (n.left.x + n.right.x) / 2;
+    } else if (n.type === "Group") {
+      setPos(n.children[0], depth + 1);
+      n.x = n.children[0].x;
+    } else {
+      n.x = currX * spacing + 100;
+      currX++;
+    }
+  }
+
+  setPos(node, depth);
+  return node;
+}
+
+
+    function getTreeDepth(node) {
+      if (!node) return 0;
+      if (node.type === "BinaryExpr") {
+        return 1 + Math.max(getTreeDepth(node.left), getTreeDepth(node.right));
+      } else if (node.type === "Group") {
+        return 1 + getTreeDepth(node.children[0]);
+      } else {
+        return 1;
+      }
+    }
+
+    function drawTree(svg, node) {
+      svg.innerHTML = "";
+
+      function drawNode(n) {
+        if (!n) return;
+        if (n.left) drawLine(svg, n.x, n.y, n.left.x, n.left.y);
+        if (n.right) drawLine(svg, n.x, n.y, n.right.x, n.right.y);
+        if (n.type === "Group") drawLine(svg, n.x, n.y, n.children[0].x, n.children[0].y);
+
+        drawCircle(svg, n.x, n.y, n.type === "BinaryExpr" ? n.operator : n.value || "()", n.type);
+
+        drawNode(n.left);
+        drawNode(n.right);
+        if (n.children) drawNode(n.children[0]);
+      }
+
+      drawNode(node);
+    }
+
+    function drawCircle(svg, x, y, text, type) {
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", x);
+      circle.setAttribute("cy", y);
+      circle.setAttribute("r", 25);
+      circle.setAttribute("fill", "#b30000");
+      circle.setAttribute("stroke", "white");
+      circle.setAttribute("stroke-width", "2");
+      g.appendChild(circle);
+
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("x", x);
+      label.setAttribute("y", y + 5);
+      label.setAttribute("text-anchor", "middle");
+      label.setAttribute("fill", "white");
+      label.setAttribute("font-size", "16px");
+      label.textContent = text;
+      g.appendChild(label);
+
+      svg.appendChild(g);
+    }
+
+    function drawLine(svg, x1, y1, x2, y2) {
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.setAttribute("x1", x1);
+      line.setAttribute("y1", y1 + 25);
+      line.setAttribute("x2", x2);
+      line.setAttribute("y2", y2 - 25);
+      line.setAttribute("stroke", "#999");
+      line.setAttribute("stroke-width", "2");
+      svg.appendChild(line);
+    }
+
+    function generateTree() {
+      const input = document.getElementById("expr").value;
+      const svg = document.getElementById("treeCanvas");
+
+      try {
+        const tokens = tokenize(input);
+        const ast = parseExpression(tokens);
+        computePositions(ast);
+        const depth = getTreeDepth(ast);
+        svg.setAttribute("height", depth * 120);
+        drawTree(svg, ast);
+      } catch (err) {
+        svg.innerHTML = `<text x="10" y="50" fill="red" font-size="18">${err.message}</text>`;
+      }
+    }
+  </script>
+
+
+
+    
+</main>
+
+<footer>
+    Made by FOUR LOOPS &copy; 2025
+</footer>
+
+</body>
+</html> 
